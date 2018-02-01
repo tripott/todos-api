@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const app = express()
+const search = require('./lib/to-do-search')
 const {
   propOr,
   compose,
@@ -21,38 +22,19 @@ console.log('process.env.PORT', process.env.PORT)
 const todos = [
   { id: 1, text: 'Wake up', completed: true },
   { id: 2, text: 'Drink coffee', completed: true },
-  { id: 3, text: 'Teach express', completed: false }
+  { id: 3, text: 'Teach express', completed: false },
+  { id: 4, text: 'snore', completed: false }
 ]
 
 app.get('/', (req, res) => res.send('<h1>Welcome to the ToDos API</h1>'))
 app.get('/todos', (req, res) => {
-  // GET /todos?s=text:teach
-  // req.query.s   // => `text:teach`
-
-  const isQuery = pathOr(null, ['query', 's'], req)
-
-  if (isQuery) {
+  if (pathOr(null, ['query', 's'], req)) {
     const searchProp = compose(head, split(':'), prop('s'))(req.query)
     const searchValue = compose(last, split(':'), prop('s'))(req.query)
-
-    //searchProp  // => 'text'
-    //searchValue // => 'teach'
-    console.log('searchProp', searchProp)
-    console.log('searchValue', searchValue)
-
-    var searchedToDos = []
-
-    function search(todo) {
-      return compose(contains(searchValue), split(' '))(todo[searchProp])
-    }
-
-    searchedToDos = filter(search, todos)
-
-    res.send(searchedToDos)
+    res.send(filter(search(searchProp, searchValue), todos))
   } else {
     res.send(todos)
   }
-
   return
 })
 

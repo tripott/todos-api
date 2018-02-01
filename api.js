@@ -1,8 +1,12 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-const port = 4000
+const { propOr } = require('ramda')
 
-console.log('process.env', process.env)
+//const port = process.env.PORT || 4000
+const port = propOr(9999, 'PORT', process.env)
+
+console.log('process.env.PORT', process.env.PORT)
 
 const todos = [
   { id: 1, text: 'Wake up', completed: true },

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/tripott/todos-api#readme",
   "dependencies": {
+    "dotenv": "^5.0.0",
     "express": "^4.16.2",
     "ramda": "^0.25.0"
   }

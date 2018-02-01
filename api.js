@@ -23,7 +23,8 @@ const {
   not,
   isEmpty,
   join,
-  find
+  find,
+  path
 } = require('ramda')
 
 const bodyParser = require('body-parser')
@@ -71,7 +72,7 @@ app.post('/todos', (req, res, next) => {
 })
 
 app.get('/todos/:id', (req, res) =>
-  res.send(find(todo => todo.id === Number(req.params.id), todos))
+  res.send(find(todo => todo.id === Number(path(['params', 'id'], req)), todos))
 )
 
 app.get('/todos', (req, res) => {

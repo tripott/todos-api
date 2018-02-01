@@ -22,7 +22,8 @@ const {
   merge,
   not,
   isEmpty,
-  join
+  join,
+  find
 } = require('ramda')
 
 const bodyParser = require('body-parser')
@@ -68,6 +69,10 @@ app.post('/todos', (req, res, next) => {
   res.status(201).send(merge(req.body, { id: newID }))
   return
 })
+
+app.get('/todos/:id', (req, res) =>
+  res.send(find(todo => todo.id === Number(req.params.id), todos))
+)
 
 app.get('/todos', (req, res) => {
   if (pathOr(null, ['query', 's'], req)) {

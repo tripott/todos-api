@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/tripott/todos-api#readme",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "dotenv": "^5.0.0",
     "express": "^4.16.2",
+    "node-http-error": "^2.0.0",
     "ramda": "^0.25.0"
   }
 }

@@ -71,9 +71,16 @@ app.post('/todos', (req, res, next) => {
   return
 })
 
-app.get('/todos/:id', (req, res) =>
-  res.send(find(todo => todo.id === Number(path(['params', 'id'], req)), todos))
-)
+app.get('/todos/:foo', (req, res, next) => {
+  const foundToDo = find(todo => todo.id == req.params.foo, todos)
+
+  if (foundToDo) {
+    res.send(foundToDo)
+  } else {
+    next(new HTTPError(404, 'Todo Not Found'))
+  }
+  return
+})
 
 app.get('/todos', (req, res) => {
   if (pathOr(null, ['query', 's'], req)) {

@@ -7,6 +7,7 @@ const objClean = require('./lib/clean-object')
 const HTTPError = require('node-http-error')
 
 const {
+  append,
   propOr,
   add,
   sort,
@@ -36,11 +37,12 @@ console.log('process.env.PORT', process.env.PORT)
 const todos = [
   { id: 1, text: 'Wake up', completed: true },
   { id: 2, text: 'Drink coffee', completed: true },
-  { id: 3, text: 'Teach express', completed: false },
+  { id: 3, text: 'Teach express', completed: true },
   { id: 4, text: 'snore', completed: false }
 ]
 
 const todoRequiredFieldChecker = reqFieldChecker(['text'])
+const putToDoRequiredFieldChecker = reqFieldChecker(['id', 'text', 'completed'])
 
 /*
 req.params
@@ -49,8 +51,8 @@ req.query
 */
 //  CREATE - POST    /todos      COMPLETE
 //  READ   - GET     /todos/:id  COMPLETE
-//  UPDATE - PUT     /todos/:id
-//  DELETE - DELETE  /todos/:id
+//  UPDATE - PUT     /todos/:id  COMPLETE
+//  DELETE - DELETE  /todos/:id  COMPLETE
 //  LIST   - GET     /todos      COMPLETE
 
 app.use(bodyParser.json())
@@ -89,8 +91,42 @@ app.get('/todos/:id', (req, res, next) => {
 })
 
 // UPDATE GOES HERE
+// req.body   => the incoming request body
 
-// DELETE A ToDo
+app.put('/todos/:id', (req, res, next) => {
+  if (isEmpty(prop('body', req))) {
+    next(new HTTPError(400, 'Missing request body'))
+    return
+  }
+  // no weird prop are on it.  clean it!
+  //{ id: 1, text: 'Wake up', completed: true }
+  const bodyCleaner = objClean(['id', 'text', 'completed'])
+
+  const cleanedBody = bodyCleaner(req.body)
+  console.log('cleanedBody', cleanedBody)
+  const missingFields = putToDoRequiredFieldChecker(cleanedBody)
+  console.log('missingFields', missingFields)
+  // all required are props are on it.
+  if (not(isEmpty(missingFields))) {
+    // call the error handling middleware with an error object.  400, message with missing Fields
+    next(
+      new HTTPError(
+        400,
+        `Request body missing these fields: ${join(', ', missingFields)}`
+      )
+    )
+    return
+  }
+
+  // Option 1
+  // remove the item the Array
+  // append the item back into the array
+  res.send(
+    compose(append(cleanedBody), reject(todo => todo.id == req.params.id))(
+      todos
+    )
+  )
+})
 
 app.delete('/todos/:id', (req, res, next) =>
   res.send(reject(todo => todo.id == req.params.id, todos))

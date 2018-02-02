@@ -24,7 +24,8 @@ const {
   isEmpty,
   join,
   find,
-  path
+  path,
+  reject
 } = require('ramda')
 
 const bodyParser = require('body-parser')
@@ -46,6 +47,11 @@ req.params
 req.body
 req.query
 */
+//  CREATE - POST    /todos      COMPLETE
+//  READ   - GET     /todos/:id  COMPLETE
+//  UPDATE - PUT     /todos/:id
+//  DELETE - DELETE  /todos/:id
+//  LIST   - GET     /todos      COMPLETE
 
 app.use(bodyParser.json())
 
@@ -71,8 +77,8 @@ app.post('/todos', (req, res, next) => {
   return
 })
 
-app.get('/todos/:foo', (req, res, next) => {
-  const foundToDo = find(todo => todo.id == req.params.foo, todos)
+app.get('/todos/:id', (req, res, next) => {
+  const foundToDo = find(todo => todo.id == req.params.id, todos)
 
   if (foundToDo) {
     res.send(foundToDo)
@@ -81,6 +87,14 @@ app.get('/todos/:foo', (req, res, next) => {
   }
   return
 })
+
+// UPDATE GOES HERE
+
+// DELETE A ToDo
+
+app.delete('/todos/:id', (req, res, next) =>
+  res.send(reject(todo => todo.id == req.params.id, todos))
+)
 
 app.get('/todos', (req, res) => {
   if (pathOr(null, ['query', 's'], req)) {

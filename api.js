@@ -57,7 +57,14 @@ req.query
 
 app.use(bodyParser.json())
 
-app.get('/', (req, res) => res.send('<h1>Welcome to the ToDos API</h1>'))
+app.get('/', (req, res) =>
+  res.send(`<h1>Welcome to the ToDos API</h1>
+  <p>Try these endpoints:</p>
+  <ul>
+    <li><a href="http://localhost:4000/todos">Retrieves all the todos  GET /todos</a></li>
+    <li><a href="http://localhost:4000/todos/1">Retrives a single todo GET /todos/1</a></li>
+  </ul>`)
+)
 
 app.post('/todos', (req, res, next) => {
   const sorter = (a, b) => a - b
@@ -89,9 +96,6 @@ app.get('/todos/:id', (req, res, next) => {
   }
   return
 })
-
-// UPDATE GOES HERE
-// req.body   => the incoming request body
 
 app.put('/todos/:id', (req, res, next) => {
   if (isEmpty(prop('body', req))) {

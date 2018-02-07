@@ -3,10 +3,11 @@ const PouchDB = require('pouchdb-core')
 PouchDB.plugin(require('pouchdb-adapter-http'))
 PouchDB.plugin(require('pouchdb-find'))
 const HTTPError = require('node-http-error')
+const sluggo = require('slugify')
 
 const db = new PouchDB(process.env.COUCHDB_URL)
 
-const get = function(docId, cb) {
+const getDoc = function(docId, cb) {
   db.get(docId, function(err, data) {
     if (err) {
       console.log('IM IN THE DAL and theres an error', err)
@@ -17,8 +18,16 @@ const get = function(docId, cb) {
   })
 }
 
+const createDoc = function(doc, cb) {
+  // TODO slugify the todo name
+  doc._id = `todo_${sluggo(doc.text)}`
+  doc.type = 'todo'
+  db.put(doc, cb)
+}
+
 const dal = {
-  get
+  getDoc,
+  createDoc
 }
 
 module.exports = dal

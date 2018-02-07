@@ -32,7 +32,7 @@ const {
 const bodyParser = require('body-parser')
 const port = propOr(9999, 'PORT', process.env)
 
-const { get } = require('./dal')
+const { getDoc, createDoc } = require('./dal')
 
 const todos = [
   { id: 1, text: 'Wake up', completed: true },
@@ -41,7 +41,7 @@ const todos = [
   { id: 4, text: 'snore', completed: false }
 ]
 
-const todoRequiredFieldChecker = reqFieldChecker(['text'])
+const todoRequiredFieldChecker = reqFieldChecker(['text', 'completed'])
 const putToDoRequiredFieldChecker = reqFieldChecker(['id', 'text', 'completed'])
 
 /*
@@ -67,9 +67,6 @@ app.get('/', (req, res) =>
 )
 
 app.post('/todos', (req, res, next) => {
-  const sorter = (a, b) => a - b
-  const newID = compose(add(1), last, sort(sorter), map(todo => todo.id))(todos)
-
   const missingFields = todoRequiredFieldChecker(req.body)
 
   if (not(isEmpty(missingFields))) {
@@ -81,13 +78,21 @@ app.post('/todos', (req, res, next) => {
     )
   }
 
-  todos.push(merge(req.body, { id: newID }))
-  res.status(201).send(merge(req.body, { id: newID }))
+  // talk to the DAL and call createDoc(doc, cb)
+  createDoc(req.body, function(err, createdResult) {
+    if (err) {
+      next(err.status, err.message, err)
+      return
+    }
+    res.status(201).send(createdResult)
+    return
+  })
+
   return
 })
 
 app.get('/todos/:id', (req, res, next) => {
-  get(req.params.id, function(err, data) {
+  getDoc(req.params.id, function(err, data) {
     if (err) {
       next(new HTTPError(err.status, err.message, err))
       return
@@ -148,6 +153,7 @@ app.get('/todos', (req, res) => {
 })
 
 app.use(function(err, req, res, next) {
+  console.log('error!', err)
   res.status(err.status || 500) // or use err.statusCode instead
   res.send(err.message)
 })

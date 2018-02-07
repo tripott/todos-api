@@ -32,7 +32,7 @@ const {
 const bodyParser = require('body-parser')
 const port = propOr(9999, 'PORT', process.env)
 
-console.log('process.env.PORT', process.env.PORT)
+const { get } = require('./dal')
 
 const todos = [
   { id: 1, text: 'Wake up', completed: true },
@@ -87,14 +87,14 @@ app.post('/todos', (req, res, next) => {
 })
 
 app.get('/todos/:id', (req, res, next) => {
-  const foundToDo = find(todo => todo.id == req.params.id, todos)
-
-  if (foundToDo) {
-    res.send(foundToDo)
-  } else {
-    next(new HTTPError(404, 'Todo Not Found'))
-  }
-  return
+  get(req.params.id, function(err, data) {
+    if (err) {
+      next(new HTTPError(err.status, err.message, err))
+      return
+    }
+    res.send(data)
+    return
+  })
 })
 
 app.put('/todos/:id', (req, res, next) => {

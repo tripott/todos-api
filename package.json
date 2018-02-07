@@ -4,7 +4,8 @@
   "description": "",
   "main": "api.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node api.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,9 @@
     "dotenv": "^5.0.0",
     "express": "^4.16.2",
     "node-http-error": "^2.0.0",
+    "pouchdb-adapter-http": "^6.4.3",
+    "pouchdb-core": "^6.4.3",
+    "pouchdb-find": "^6.4.3",
     "ramda": "^0.25.0"
   }
 }

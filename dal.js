@@ -20,14 +20,45 @@ const getDoc = function(docId, cb) {
 
 const createDoc = function(doc, cb) {
   // TODO slugify the todo name
-  doc._id = `todo_${sluggo(doc.text)}`
+  doc._id = `todo_${sluggo(doc.name)}`
   doc.type = 'todo'
   db.put(doc, cb)
 }
 
+const updateDoc = function(doc, cb) {
+  db.put(doc, function(err, updatedResult) {
+    if (err) {
+      cb(err)
+      return
+    }
+    cb(null, updatedResult)
+  })
+}
+
+const deleteDoc = function(docId, cb) {
+  db.get(docId, function(err, doc) {
+    if (err) {
+      cb(err)
+      return
+    }
+
+    console.log('retrieved doc from db.get()', doc)
+
+    db.remove(doc, function(err, deletedResult) {
+      if (err) {
+        cb(err)
+        return
+      }
+      cb(null, deletedResult)
+    })
+  })
+}
+
 const dal = {
   getDoc,
-  createDoc
+  createDoc,
+  deleteDoc,
+  updateDoc
 }
 
 module.exports = dal

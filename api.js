@@ -32,7 +32,7 @@ const {
 const bodyParser = require('body-parser')
 const port = propOr(9999, 'PORT', process.env)
 
-const { getDoc, createDoc } = require('./dal')
+const { getDoc, createDoc, deleteDoc, updateDoc } = require('./dal')
 
 const todos = [
   { id: 1, text: 'Wake up', completed: true },
@@ -41,8 +41,14 @@ const todos = [
   { id: 4, text: 'snore', completed: false }
 ]
 
-const todoRequiredFieldChecker = reqFieldChecker(['text', 'completed'])
-const putToDoRequiredFieldChecker = reqFieldChecker(['id', 'text', 'completed'])
+const todoRequiredFieldChecker = reqFieldChecker(['name', 'completed'])
+const putToDoRequiredFieldChecker = reqFieldChecker([
+  '_id',
+  '_rev',
+  'name',
+  'completed',
+  'type'
+])
 
 /*
 req.params
@@ -109,12 +115,10 @@ app.put('/todos/:id', (req, res, next) => {
   }
   // no weird prop are on it.  clean it!
   //{ id: 1, text: 'Wake up', completed: true }
-  const bodyCleaner = objClean(['id', 'text', 'completed'])
-
+  const bodyCleaner = objClean(['_id', '_rev', 'name', 'completed', 'type'])
   const cleanedBody = bodyCleaner(req.body)
-  console.log('cleanedBody', cleanedBody)
   const missingFields = putToDoRequiredFieldChecker(cleanedBody)
-  console.log('missingFields', missingFields)
+
   // all required are props are on it.
   if (not(isEmpty(missingFields))) {
     // call the error handling middleware with an error object.  400, message with missing Fields
@@ -127,18 +131,30 @@ app.put('/todos/:id', (req, res, next) => {
     return
   }
 
-  // Option 1
-  // remove the item the Array
-  // append the item back into the array
-  res.send(
-    compose(append(cleanedBody), reject(todo => todo.id == req.params.id))(
-      todos
-    )
-  )
+  //
+  // create function in the dal named updateDoc(cleanedBody, some cb )
+  // import/require from the dal
+  // export updateDoc from dal
+
+  updateDoc(cleanedBody, function(err, updatedResult) {
+    if (err) {
+      next(new HTTPError(err.status, err.message, err))
+      return
+    }
+    res.send(updatedResult)
+  })
 })
 
 app.delete('/todos/:id', (req, res, next) =>
-  res.send(reject(todo => todo.id == req.params.id, todos))
+  //  Get the id of the todo we wish to delete req.params.id
+  //  deleteDoc(docId, some anon. callback fn goes here)
+  deleteDoc(req.params.id, function(err, deletedResult) {
+    if (err) {
+      next(new HTTPError(err.status, err.message, err))
+      return
+    }
+    res.send(deletedResult)
+  })
 )
 
 app.get('/todos', (req, res) => {
